@@ -1,0 +1,15 @@
+{{ define "Index" }}
+{{ template "Header" . }}
+<div class="container my-0">
+
+  <div class="row">
+    <div class="col-4 offset-4 py-0">
+      <div class="text-center alert alert-info my-5"> {{ .Info }} </div>
+      <div class="text-center my-5"> 当前状态: {{ .Current }} </div>
+      <p><a href="/gotonet" class="btn btn-block btn-lg btn-primary">互联网</a></p>
+      <p><a href="/school"  class="btn btn-block btn-lg btn-primary">校园网</a></p>
+      </div>
+    </div>
+  </div>
+{{ template "Footer" }}
+{{ end }}
