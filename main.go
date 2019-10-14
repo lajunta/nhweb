@@ -19,7 +19,8 @@ type Configuration struct {
 }
 
 var (
-	config = Configuration{}
+	config        = Configuration{}
+	currentStauts = "school"
 )
 
 func init() {
@@ -34,6 +35,6 @@ func init() {
 
 func main() {
 	r := router()
-	log.Println("server is running...")
+	log.Printf("server is running on %s...", config.Port)
 	http.ListenAndServe(config.Port, r)
 }

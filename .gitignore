@@ -1,5 +1,7 @@
 main
 config.toml
-nhweb
+nhweb.deb
 nhweb_linux
+nhweb
+dist/nweeb/usr/local/bin/nhweb
 statik/

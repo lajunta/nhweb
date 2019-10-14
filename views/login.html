@@ -1,13 +1,11 @@
 {{ define "Login" }}
+{{ template "Header" }}
+<form action="/auth" method="post">
+  <h4 class="text-center my-4">输入密码</h4>
+  <input type="password" name="password" class="my-3 form-control text-center" />
+  <p class="my-3 text-center"><input type="submit" name="submit" value="提交" class="btn btn-lg btn-primary"></p>
+</form>
+<h5 class="text-center alert alert-info">{{ .Info }}</h5>
 
-  <h1>{{ .Info }} </h1>
-  <form action="/auth" method="post">
-    <div>
-      <label>输入密码</label>
-      <input type="password" name="password"/>
-    </div>
-    <p><input type="submit" name="submit"value="提交"></p>
-  </form>
-
-
+{{ template "Footer" }}
 {{ end }}

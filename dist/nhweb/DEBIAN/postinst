@@ -1,0 +1,2 @@
+systemctl enable nhweb
+service nhweb start

@@ -1,7 +1,29 @@
 {{ define "Footer" }}
+
+
+
+</div>
+</div>
+</div>
 <script src="/static/js/popper.min.js"></script>
 <script src="/static/js/jquery.min.js"></script>
 <script src="/static/js/bootstrap.min.js"></script>
+<script>
+  function centerit() {
+    // var myEvent = new Event('resize');
+    // window.dispatchEvent(myEvent);
+    width = 960
+    height = 720
+    window.resizeTo(width, height)
+
+    // screen.width means Desktop Width
+    // screen.height means Desktop Height
+    var center_left = (screen.width / 2) - (width / 2);
+    var center_top = (screen.height / 2) - (height / 2);
+    window.moveTo(center_left, center_top)
+  }
+</script>
 </body>
+
 </html>
 {{ end }}

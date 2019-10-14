@@ -1,0 +1,19 @@
+[Unit]
+Description=Nethelper web service 
+Requires=network.target
+After=network.target
+
+[Service]
+User=one
+Group=one
+Environment="PATH=/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin"
+WorkingDirectory=/root/goapps/nhweb
+ExecStart=/usr/local/bin/nhweb
+
+Type=simple
+KillMode=process
+Restart=on-failure
+RestartSec=20s
+
+[Install]
+WantedBy=multi-user.target
