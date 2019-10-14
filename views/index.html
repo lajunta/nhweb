@@ -1,18 +1,51 @@
 {{ define "Index" }}
 {{ template "Header" }}
 
-<h4 class="text-center alert alert-info">{{ .Info }}</h4>
-<h4 class="text-center my-4"> 当前状态: <strong> {{ .Current }} </strong></h4>
 {{ if .Logined }}
-<p><a href="/school" class="btn btn-block btn-lg btn-primary">校园网</a></p>
-<p><a href="/gotonet" class="btn btn-block btn-lg btn-success">互联网</a></p>
-<p>
-  <a href="/logout" class="btn btn-block btn-lg btn-success">退出</a>
-</p>
+<div class="my_container">
+  <div class="bg-primary shadow rounded">
+    <a href="/school" class="">
+      <img src="/static/school.png" width="96px" height="96px" alt="">
+      <p class="text-center">校园网 
+          {{ if eq .Current "school" }}
+          <strong><span class="badge badge-warning">✓</span></strong>
+          {{ end }}
+      </p>
+    </a>
+  </div>
+  <div class="bg-success shadow rounded">
+    <a href="/gotonet" class="">
+      <img src="/static/internet.png" width="96px" height="96px" alt="">
+      <p class="text-center">互联网
+        {{ if eq .Current "net"}}
+        <strong><span class="badge badge-warning">✓</span></strong>
+        {{ end }}
+      </p>
+    </a>
+  </div>
+  <div class="shadow rounded" style="background: #ea7362">
+    <a href="/logout" class="">
+        <img src="/static/quit.png" width="96px" height="96px" alt="">
+        <p class="text-center">退出</p>
+    </a>
+  </div>
+</div>
+
 {{ else }}
-<p>
-  <a href="/login" class="btn btn-block btn-lg btn-success">登录</a>
-</p>
+  <div class="my_container2">
+    <div class="myimg bg-white">
+      <img src="/static/login.png" width="96" height="96" alt="">
+    </div>
+    <div class="myform bg-white">
+      <form action="/auth" method="post">
+      <h4 class="my-4">密 码</h4>
+      <input type="password" name="password" class="my-3 form-control" />
+      <p class="my-3 "><input type="submit" name="submit" value="提交" class="btn btn-block btn-success"></p>
+      </form>
+    </div>
+
+  </div>
+
 {{ end }}
 {{ template "Footer" }}
 {{ end }}

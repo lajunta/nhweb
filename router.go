@@ -20,12 +20,7 @@ var (
 )
 
 func index(w http.ResponseWriter, r *http.Request) {
-	// if !isLogined(w, r) {
-	// 	setSession(w, r, "flash", "请先登录")
-	// 	http.Redirect(w, r, "/login", 302)
-	// }
-	ctx["Current"] = getCurrent()
-	ctx["Info"] = getSession(w, r, "flash")
+	ctx["Current"] = getCurrent(w, r)
 	ctx["Logined"] = isLogined(w, r)
 	tmpl.ExecuteTemplate(w, "Index", ctx)
 }
@@ -36,7 +31,7 @@ func school(w http.ResponseWriter, r *http.Request) {
 	room := fields[2]
 	cmd := exec.Command("sh", config.CommandPath+"/school")
 	err := cmd.Run()
-	ctx["Current"] = getCurrent()
+
 	if err != nil {
 		log.Println(err.Error())
 		setSession(w, r, "flash", "操作失败")
@@ -59,7 +54,6 @@ func gotonet(w http.ResponseWriter, r *http.Request) {
 	fname := "/net" + string(room)
 	cmd := exec.Command("sh", config.CommandPath+fname)
 	err := cmd.Run()
-	ctx["Current"] = getCurrent()
 	if err != nil {
 		setSession(w, r, "flash", "操作失败")
 	} else {
@@ -68,11 +62,6 @@ func gotonet(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/", 302)
 	//tmpl.ExecuteTemplate(w, "Index", ctx)
-}
-
-func login(w http.ResponseWriter, r *http.Request) {
-	ctx["Info"] = getSession(w, r, "flash")
-	tmpl.ExecuteTemplate(w, "Login", ctx)
 }
 
 func auth(w http.ResponseWriter, r *http.Request) {
@@ -131,7 +120,6 @@ func router() *mux.Router {
 	r.HandleFunc("/", checkIP(index))
 	r.HandleFunc("/school", checkIP(school))
 	r.HandleFunc("/gotonet", checkIP(gotonet))
-	r.HandleFunc("/login", checkIP(login))
 	r.HandleFunc("/logout", checkIP(logout))
 	r.HandleFunc("/auth", auth).Methods("POST")
 	r.NotFoundHandler = http.HandlerFunc(notFound)

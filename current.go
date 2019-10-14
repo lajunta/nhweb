@@ -2,30 +2,28 @@ package main
 
 import (
 	"io/ioutil"
+	"net/http"
 	"strconv"
 	"strings"
 )
 
-var status = map[string]string{
-	"school": "校园网",
-	"allnet": "正在使用互联网",
-	"net1":   "C401正在上网",
-	"net2":   "C402正在上网",
-	"net3":   "C403正在上网",
-	"net4":   "C404正在上网",
-	"net5":   "C303正在上网",
-	"net6":   "C304正在上网",
-	"net9":   "C503正在上网",
-	"net10":  "C504正在上网",
-	"net11":  "C502正在上网",
-	"net13":  "C103正在上网",
-}
-
-func getCurrent() string {
+func getCurrent(w http.ResponseWriter, r *http.Request) string {
+	ip := r.RemoteAddr
+	fields := strings.Split(ip, ".")
+	room := fields[2]
+	// c304 is special num
+	if room == "7" {
+		room = "6"
+	}
+	self := "net" + room
 	cpath := config.CommandPath + "/current"
 	b, _ := ioutil.ReadFile(cpath)
 	current := strings.TrimSuffix(string(b), "\n")
-	return status[current]
+
+	if current == "allnet" || current == self {
+		return "net"
+	}
+	return "school"
 }
 
 func setCurrent(room string, tag string) {
@@ -40,19 +38,19 @@ func setCurrent(room string, tag string) {
 	} else {
 		nnum = num + 1
 	}
-	self := "net" + room
+	self := "net" + string(num)
 	neibor := "net" + strconv.Itoa(nnum)
 	b, _ := ioutil.ReadFile(cpath)
-	str := strings.TrimSuffix(string(b), "\n")
+	current := strings.TrimSuffix(string(b), "\n")
 	wstr := ""
-	if (str == "school") || (str == self) {
+	if (current == "school") || (current == self) {
 		if tag == "school" {
 			wstr = "school"
 		} else if tag == "net" {
 			wstr = self
 		}
 	}
-	if (str == neibor) || (str == "allnet") {
+	if (current == neibor) || (current == "allnet") {
 		if tag == "school" {
 			wstr = neibor
 		} else if tag == "net" {
