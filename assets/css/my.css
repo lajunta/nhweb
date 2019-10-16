@@ -11,9 +11,8 @@
   body {
     background: #DBDBEB;
     background-image: url("/static/bg1.jpg");
-    background-size: cover;
-    background-repeat: no-repeat;
-    min-height:500px;
+    background-size: 100%,100%;
+		background-repeat: no-repeat;
   }
   .my_container{
     display:grid;

@@ -8,8 +8,8 @@ import (
 )
 
 func getCurrent(w http.ResponseWriter, r *http.Request) string {
-	ip := r.RemoteAddr
-	fields := strings.Split(ip, ".")
+	addr := strings.Split(r.RemoteAddr, ":")
+	fields := strings.Split(addr[0], ".")
 	room := fields[2]
 	// c304 is special num
 	if room == "7" {
@@ -38,7 +38,7 @@ func setCurrent(room string, tag string) {
 	} else {
 		nnum = num + 1
 	}
-	self := "net" + string(num)
+	self := "net" + strconv.Itoa(num)
 	neibor := "net" + strconv.Itoa(nnum)
 	b, _ := ioutil.ReadFile(cpath)
 	current := strings.TrimSuffix(string(b), "\n")
@@ -49,6 +49,7 @@ func setCurrent(room string, tag string) {
 		} else if tag == "net" {
 			wstr = self
 		}
+		ioutil.WriteFile(cpath, []byte(wstr), 0755)
 	}
 	if (current == neibor) || (current == "allnet") {
 		if tag == "school" {
@@ -56,7 +57,6 @@ func setCurrent(room string, tag string) {
 		} else if tag == "net" {
 			wstr = "allnet"
 		}
+		ioutil.WriteFile(cpath, []byte(wstr), 0755)
 	}
-
-	ioutil.WriteFile(cpath, []byte(wstr), 0755)
 }

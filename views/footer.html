@@ -10,19 +10,22 @@
 <script src="/static/js/jquery.min.js"></script>
 <script src="/static/js/bootstrap.min.js"></script>
 <script>
+  var width = 840
+  var height = 540
+  var center_left = (screen.width / 2) - (width / 2);
+  var center_top = (screen.height / 2) - (height / 2);
   function centerit() {
     // var myEvent = new Event('resize');
     // window.dispatchEvent(myEvent);
-    width = 870
-    height = 640
-    window.resizeTo(width, height)
-
     // screen.width means Desktop Width
     // screen.height means Desktop Height
-    var center_left = (screen.width / 2) - (width / 2);
-    var center_top = (screen.height / 2) - (height / 2);
     window.moveTo(center_left, center_top)
+    window.resizeTo(width, height)
   }
+  
+  $(window).resize(function(){
+		window.resizeTo(width,height);	
+  });
 </script>
 </body>
 

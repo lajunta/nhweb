@@ -26,8 +26,8 @@ func index(w http.ResponseWriter, r *http.Request) {
 }
 
 func school(w http.ResponseWriter, r *http.Request) {
-	ip := r.RemoteAddr
-	fields := strings.Split(ip, ".")
+	addr := strings.Split(r.RemoteAddr, ":")
+	fields := strings.Split(addr[0], ".")
 	room := fields[2]
 	cmd := exec.Command("sh", config.CommandPath+"/school")
 	err := cmd.Run()
@@ -45,19 +45,18 @@ func school(w http.ResponseWriter, r *http.Request) {
 }
 
 func gotonet(w http.ResponseWriter, r *http.Request) {
-	ip := r.RemoteAddr
-	fields := strings.Split(ip, ".")
+	addr := strings.Split(r.RemoteAddr, ":")
+	fields := strings.Split(addr[0], ".")
 	room := fields[2]
 	if room == "7" {
 		room = "6"
 	}
-	fname := "/net" + string(room)
+	fname := "/net" + room
 	cmd := exec.Command("sh", config.CommandPath+fname)
 	err := cmd.Run()
 	if err != nil {
-		setSession(w, r, "flash", "操作失败")
+		log.Println(err.Error())
 	} else {
-		setSession(w, r, "flash", "操作成功")
 		setCurrent(room, "net")
 	}
 	http.Redirect(w, r, "/", 302)
