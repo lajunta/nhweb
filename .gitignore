@@ -1,7 +1,9 @@
+go.sum
 main
 config.toml
 nhweb.deb
 nhweb_linux
 nhweb
-dist/nweeb/usr/local/bin/nhweb
+dist/nhweb/usr/local/bin/nhweb
+dist/windows
 statik/

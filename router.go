@@ -2,9 +2,11 @@ package main
 
 import (
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -25,11 +27,21 @@ func index(w http.ResponseWriter, r *http.Request) {
 	tmpl.ExecuteTemplate(w, "Index", ctx)
 }
 
+func workDir() string {
+	return config.CommandPath
+}
+
 func school(w http.ResponseWriter, r *http.Request) {
-	addr := strings.Split(r.RemoteAddr, ":")
-	fields := strings.Split(addr[0], ".")
-	room := fields[2]
-	cmd := exec.Command("sh", config.CommandPath+"/school")
+
+	neibor := rooms[r.RemoteAddr].Neibor
+	schoolPath := workDir() + "/school"
+	neiborPath := workDir() + "/net" + neibor
+
+	fname := schoolPath
+	if netStatus() == "allnet" || netStatus() == "net"+neibor {
+		fname = neiborPath
+	}
+	cmd := exec.Command("sh", fname)
 	err := cmd.Run()
 
 	if err != nil {
@@ -37,30 +49,31 @@ func school(w http.ResponseWriter, r *http.Request) {
 		setSession(w, r, "flash", "操作失败")
 	} else {
 		setSession(w, r, "flash", "操作成功")
-		setCurrent(room, "school")
 	}
 
 	http.Redirect(w, r, "/", 302)
 	//tmpl.ExecuteTemplate(w, "Index", ctx)
 }
 
+func netStatus() string {
+	currentPath := filepath.Join(workDir(), "current")
+	data, _ := ioutil.ReadFile(currentPath)
+	return strings.TrimSpace(string(data))
+}
+
 func gotonet(w http.ResponseWriter, r *http.Request) {
-	addr := strings.Split(r.RemoteAddr, ":")
-	fields := strings.Split(addr[0], ".")
-	room := fields[2]
-	if room == "7" {
-		room = "6"
+	num := rooms[r.RemoteAddr].Num
+	neibor := rooms[r.RemoteAddr].Neibor
+	netPath := workDir() + "/net" + num
+	allnetPath := workDir() + "/allnet"
+
+	fname := netPath
+	if netStatus() == "allnet" || netStatus() == "net"+neibor {
+		fname = allnetPath
 	}
-	fname := "/net" + room
-	cmd := exec.Command("sh", config.CommandPath+fname)
-	err := cmd.Run()
-	if err != nil {
-		log.Println(err.Error())
-	} else {
-		setCurrent(room, "net")
-	}
+
+	exec.Command("sh", fname).Run()
 	http.Redirect(w, r, "/", 302)
-	//tmpl.ExecuteTemplate(w, "Index", ctx)
 }
 
 func auth(w http.ResponseWriter, r *http.Request) {
