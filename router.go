@@ -22,6 +22,7 @@ var (
 )
 
 func index(w http.ResponseWriter, r *http.Request) {
+
 	ctx["Current"] = getCurrent(w, r)
 	ctx["Logined"] = isLogined(w, r)
 	tmpl.ExecuteTemplate(w, "Index", ctx)
@@ -32,8 +33,8 @@ func workDir() string {
 }
 
 func school(w http.ResponseWriter, r *http.Request) {
-
-	neibor := rooms[r.RemoteAddr].Neibor
+	ip := strings.Split(r.RemoteAddr, ":")[0]
+	neibor := rooms[ip].Neibor
 	schoolPath := workDir() + "/school"
 	neiborPath := workDir() + "/net" + neibor
 
@@ -41,7 +42,8 @@ func school(w http.ResponseWriter, r *http.Request) {
 	if netStatus() == "allnet" || netStatus() == "net"+neibor {
 		fname = neiborPath
 	}
-	cmd := exec.Command("sh", fname)
+
+	cmd := exec.Command("sh", "-c", fname)
 	err := cmd.Run()
 
 	if err != nil {
@@ -62,8 +64,9 @@ func netStatus() string {
 }
 
 func gotonet(w http.ResponseWriter, r *http.Request) {
-	num := rooms[r.RemoteAddr].Num
-	neibor := rooms[r.RemoteAddr].Neibor
+	ip := strings.Split(r.RemoteAddr, ":")[0]
+	num := rooms[ip].Num
+	neibor := rooms[ip].Neibor
 	netPath := workDir() + "/net" + num
 	allnetPath := workDir() + "/allnet"
 
@@ -72,7 +75,7 @@ func gotonet(w http.ResponseWriter, r *http.Request) {
 		fname = allnetPath
 	}
 
-	exec.Command("sh", fname).Run()
+	exec.Command("sh", "-c", fname).Run()
 	http.Redirect(w, r, "/", 302)
 }
 
