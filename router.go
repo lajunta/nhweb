@@ -1,10 +1,11 @@
 package main
 
 import (
+	"embed"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -13,7 +14,14 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+//go:embed static
+var Assets embed.FS
+
+//go:embed views
+var Views embed.FS
+
 var (
+	err        error
 	tmpl       *template.Template
 	skey       = []byte(config.SessionKey)
 	store      = sessions.NewCookieStore(skey)
@@ -22,10 +30,12 @@ var (
 )
 
 func index(w http.ResponseWriter, r *http.Request) {
-
-	ctx["Current"] = getCurrent(w, r)
-	ctx["Logined"] = isLogined(w, r)
-	tmpl.ExecuteTemplate(w, "Index", ctx)
+	ctx["Current"] = getCurrent(r)
+	ctx["Logined"] = isLogined(r)
+	err := tmpl.ExecuteTemplate(w, "Index", ctx)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 }
 
 func workDir() string {
@@ -44,7 +54,7 @@ func school(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmd := exec.Command("sh", "-c", fname)
-	err := cmd.Run()
+	err = cmd.Run()
 
 	if err != nil {
 		log.Println(err.Error())
@@ -53,13 +63,12 @@ func school(w http.ResponseWriter, r *http.Request) {
 		setSession(w, r, "flash", "操作成功")
 	}
 
-	http.Redirect(w, r, "/", 302)
-	//tmpl.ExecuteTemplate(w, "Index", ctx)
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func netStatus() string {
 	currentPath := filepath.Join(workDir(), "current")
-	data, _ := ioutil.ReadFile(currentPath)
+	data, _ := os.ReadFile(currentPath)
 	return strings.TrimSpace(string(data))
 }
 
@@ -76,7 +85,7 @@ func gotonet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	exec.Command("sh", "-c", fname).Run()
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func auth(w http.ResponseWriter, r *http.Request) {
@@ -85,11 +94,11 @@ func auth(w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("password") == config.Pass {
 		session.Values["logined"] = true
 		session.Save(r, w)
-		http.Redirect(w, r, "/", 302)
+		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
 		setSession(w, r, "flash", "密码不对")
 		session.Save(r, w)
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login", http.StatusFound)
 	}
 }
 
@@ -97,19 +106,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, cookieName)
 	session.Values["logined"] = false
 	session.Save(r, w)
-	http.Redirect(w, r, "/", 302)
-}
-
-func getSession(w http.ResponseWriter, r *http.Request, sname string) string {
-	session, _ := store.Get(r, cookieName)
-	if str, ok := session.Values[sname].(string); ok {
-		if sname == "flash" {
-			session.Values[sname] = ""
-		}
-		session.Save(r, w)
-		return str
-	}
-	return ""
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func setSession(w http.ResponseWriter, r *http.Request, sname, str string) {
@@ -118,7 +115,7 @@ func setSession(w http.ResponseWriter, r *http.Request, sname, str string) {
 	session.Save(r, w)
 }
 
-func isLogined(w http.ResponseWriter, r *http.Request) bool {
+func isLogined(r *http.Request) bool {
 	session, _ := store.Get(r, cookieName)
 	if logined, ok := session.Values["logined"].(bool); ok {
 		return logined
@@ -127,19 +124,18 @@ func isLogined(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func router() *mux.Router {
-
 	store.Options.MaxAge = 0
-	tmpl, _ = tmpl.ParseGlob("views/*")
-
+	tmpl, _ = template.ParseFS(Views, "views/*.html")
 	r := mux.NewRouter()
-	r.HandleFunc("/", checkIP(index))
+	fs := http.FileServer(http.FS(Assets))
+	r.HandleFunc("/", index)
 	r.HandleFunc("/school", checkIP(school))
 	r.HandleFunc("/gotonet", checkIP(gotonet))
 	r.HandleFunc("/logout", checkIP(logout))
 	r.HandleFunc("/auth", auth).Methods("POST")
 	r.NotFoundHandler = http.HandlerFunc(notFound)
-	fs := http.FileServer(http.Dir("assets/"))
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
+	// fs = http.FileServer(http.Dir("assets/"))
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/", fs))
 	return r
 }
 

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/user"
 	"path"
 
@@ -38,7 +38,7 @@ type Room struct {
 func parseYaml() {
 	user, _ := user.Current()
 	filename := path.Join(user.HomeDir, ".nhweb", "rooms.yml")
-	yamlFile, err := ioutil.ReadFile(filename)
+	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
 		log.Fatalln("Can't open file")
 	}
