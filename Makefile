@@ -11,8 +11,7 @@ windows:
 	GOOS=windows GOARCH=amd64  CC=/usr/bin/x86_64-w64-mingw32-gcc CXX=/usr/bin/x86_64-w64-mingw32-g++ CGO_ENABLED=0 go  build  -ldflags="-w -s" -o "dist/windows/nhweb_上网助手(64位).exe" 
 	upx "dist/windows/nhweb_上网助手(64位).exe"
 
-
-build:
+linux:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o "dist/nhweb_linux" 
 	upx "dist/nhweb_linux"
 

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"sync"
 
 	"github.com/BurntSushi/toml"
 	"gopkg.in/yaml.v2"
@@ -22,10 +23,12 @@ type Configuration struct {
 
 var (
 	config = Configuration{}
+	configMu sync.RWMutex
 )
 
 var (
 	rooms map[string]Room
+	roomsMu sync.RWMutex
 )
 
 // Room descript the client info
@@ -40,11 +43,17 @@ func parseYaml() {
 	filename := path.Join(user.HomeDir, ".nhweb", "rooms.yml")
 	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
-		log.Fatalln("Can't open file")
+		log.Printf("Warning: Can't open rooms.yml file: %v", err)
+		rooms = make(map[string]Room) // Initialize empty map
+		return
 	}
+	
+	roomsMu.Lock()
+	defer roomsMu.Unlock()
 	err = yaml.Unmarshal(yamlFile, &rooms)
 	if err != nil {
-		log.Fatalln(err.Error())
+		log.Printf("Warning: Failed to parse rooms.yml: %v", err)
+		rooms = make(map[string]Room) // Initialize empty map
 	}
 }
 
@@ -62,5 +71,13 @@ func init() {
 func main() {
 	r := router()
 	log.Printf("server is running on %s...", config.Port)
-	http.ListenAndServe(config.Port, r)
+	
+	server := &http.Server{
+		Addr:    config.Port,
+		Handler: r,
+	}
+	
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("Server error: %v", err)
+	}
 }
